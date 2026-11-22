@@ -1,38 +1,39 @@
-//your JS code here. If required.
 const classes = ["img1", "img2", "img3", "img4", "img5"];
 const dup = classes[Math.floor(Math.random() * 5)];
-const images = [...classes, dup];
+const order = [...classes, dup];
 
-// Fisher-Yates shuffle
-for (let i = images.length - 1; i > 0; i--) {
+for (let i = order.length - 1; i > 0; i--) {
   const j = Math.floor(Math.random() * (i + 1));
-  [images[i], images[j]] = [images[j], images[i]];
+  [order[i], order[j]] = [order[j], order[i]];
 }
 
-let selected = [];
-let result = null; // null | "human" | "robot"
+let selected = []; 
+let result = null; 
 
-const root = document.createElement("div");
-document.body.appendChild(root);
+const h3 = document.createElement("h3");
+h3.id = "h";
+h3.textContent = "Please click on the identical tiles to verify that you are not a robot.";
+document.body.appendChild(h3);
 
-function render() {
-  root.innerHTML = "";
+const tiles = document.createElement("div");
+document.body.appendChild(tiles);
 
-  const h3 = document.createElement("h3");
-  h3.id = "h";
-  h3.innerText = "Please click on the identical tiles to verify that you are not a robot.";
-  root.appendChild(h3);
+const controls = document.createElement("div");
+document.body.appendChild(controls);
 
-  images.forEach((cls, idx) => {
-    const img = document.createElement("img");
-    img.className = cls;
-    img.addEventListener("click", () => {
-      if (result !== null || selected.includes(idx)) return;
-      selected.push(idx);
-      render();
-    });
-    root.appendChild(img);
+order.forEach((cls) => {
+  const img = document.createElement("img");
+  img.className = cls;
+  img.addEventListener("click", () => {
+    if (result !== null || selected.includes(img)) return; // same tile twice -> ignored
+    selected.push(img);
+    updateControls();
   });
+  tiles.appendChild(img);
+});
+
+function updateControls() {
+  controls.innerHTML = "";
 
   if (selected.length >= 1) {
     const reset = document.createElement("button");
@@ -41,9 +42,9 @@ function render() {
     reset.addEventListener("click", () => {
       selected = [];
       result = null;
-      render();
+      updateControls();
     });
-    root.appendChild(reset);
+    controls.appendChild(reset);
   }
 
   if (selected.length === 2 && result === null) {
@@ -51,21 +52,19 @@ function render() {
     verify.id = "verify";
     verify.innerHTML = "Verify";
     verify.addEventListener("click", () => {
-      result = images[selected[0]] === images[selected[1]] ? "human" : "robot";
-      render();
+      result = selected[0].className === selected[1].className ? "human" : "robot";
+      updateControls();
     });
-    root.appendChild(verify);
+    controls.appendChild(verify);
   }
 
   if (result !== null) {
     const p = document.createElement("p");
     p.id = "para";
-    p.innerText =
+    p.textContent =
       result === "human"
         ? "You are a human. Congratulations!"
         : "We can't verify you as a human. You selected the non-identical tiles.";
-    root.appendChild(p);
+    controls.appendChild(p);
   }
 }
-
-render();
